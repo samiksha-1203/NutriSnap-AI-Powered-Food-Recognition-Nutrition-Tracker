@@ -1,0 +1,4 @@
+food_log.json
+user_feedback.json
+__pycache__/
+*.pyc

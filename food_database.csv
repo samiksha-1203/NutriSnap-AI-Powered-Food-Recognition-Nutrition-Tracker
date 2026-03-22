@@ -1,0 +1,144 @@
+food_name,indian_name,category,classification,health_score,calories_per_100g,protein_g,carbs_g,fats_g,fiber_g,tip
+roti,Roti / Chapati,Bread,Healthy,82,297,9.8,61.0,3.7,2.1,Use whole wheat atta for extra fiber
+rice,Steamed Rice / Chawal,Grain,Moderate,65,130,2.7,28.2,0.3,0.4,Eat in moderate portions with dal and sabzi
+biryani,Biryani,Rice Dish,Moderate,55,200,8.5,28.0,7.0,1.2,Homemade biryani is much healthier than restaurant
+samosa,Samosa,Fried Snack,Junk,28,308,5.5,32.0,18.0,2.1,Bake instead of fry to make it healthier
+dal,Dal / Lentil Curry,Lentils,Healthy,88,116,9.0,20.0,0.4,7.9,Excellent protein source — eat daily!
+idli,Idli,Steamed,Healthy,85,39,2.0,7.9,0.2,0.5,Great breakfast — low calorie and easy to digest
+dosa,Dosa,Crepe,Moderate,68,168,3.5,24.0,6.5,0.9,Plain dosa is healthier than masala dosa
+butter_chicken,Butter Chicken,Curry,Moderate,52,150,12.0,8.0,9.0,0.5,Reduce cream and butter for healthier version
+naan,Naan,Bread,Moderate,50,310,9.0,55.0,5.0,1.5,Limit to 1 piece — high in refined flour
+palak_paneer,Palak Paneer,Vegetable Curry,Healthy,78,180,9.5,8.0,12.5,2.5,Excellent iron and calcium combo!
+chole,Chole / Chana Masala,Legume Curry,Healthy,80,164,8.9,27.0,2.6,7.6,High fiber and protein — great for health
+puri,Puri,Fried Bread,Junk,30,340,7.5,45.0,16.0,1.8,Deep fried — have occasionally only
+pakora,Pakora / Bhajiya,Fried Snack,Junk,25,280,6.0,30.0,16.0,2.0,Air fry instead of deep fry for healthier option
+gulab_jamun,Gulab Jamun,Dessert,Junk,20,387,5.0,65.0,12.0,0.5,High sugar — occasional treat only
+khichdi,Khichdi,One Pot,Healthy,84,124,5.0,23.0,1.5,2.5,Perfect comfort food — balanced and nutritious
+upma,Upma,Breakfast,Healthy,76,160,4.5,28.0,4.5,2.0,Add more vegetables to boost nutrition
+poha,Poha,Breakfast,Healthy,74,180,3.5,35.0,3.0,1.5,Light and digestible — great morning meal
+rajma,Rajma / Kidney Beans,Legume Curry,Healthy,83,127,8.7,22.0,0.5,6.4,Rich in protein and iron
+aloo_gobi,Aloo Gobi,Vegetable Curry,Moderate,65,95,3.0,15.0,3.5,3.0,Reduce oil and add turmeric
+paneer,Paneer Dishes,Dairy,Moderate,62,265,18.3,3.4,20.8,0.0,Good protein but high fat — moderate portions
+sandwich,Sandwich,Snack,Moderate,58,250,10.0,30.0,10.0,2.5,Use whole grain bread and add vegetables
+vada_pav,Vada Pav,Street Food,Junk,25,290,7.0,42.0,12.0,2.5,Deep fried and high carb — occasional treat
+pav_bhaji,Pav Bhaji,Street Food,Moderate,48,210,6.0,32.0,8.0,3.5,Bhaji is nutritious but pav adds refined carbs
+chaat,Chaat,Street Food,Moderate,45,180,5.5,28.0,7.0,3.0,Homemade chaat with less oil is better
+kebab,Kebab / Tikka,Grilled,Healthy,72,165,22.0,5.0,7.5,0.5,Grilled protein — great choice!
+uttapam,Uttapam,Breakfast,Healthy,78,180,5.0,30.0,5.0,2.5,Fermented batter with vegetables
+dhokla,Dhokla,Steamed Snack,Healthy,79,160,5.5,28.0,3.5,1.8,Fermented and steamed — great healthy snack!
+raita,Raita,Dairy Side,Healthy,77,62,3.5,6.0,2.5,0.5,Probiotic benefits — have with every meal
+paratha,Paratha,Stuffed Bread,Moderate,55,300,7.5,42.0,12.0,2.5,Plain paratha with minimal ghee is moderate
+chicken_curry,Chicken Curry,Non-veg Curry,Moderate,65,175,18.0,5.0,10.0,0.5,Homemade with less oil is healthy protein
+fish_curry,Fish Curry,Non-veg Curry,Healthy,75,150,20.0,4.0,7.0,0.5,Excellent omega-3 source
+egg_curry,Egg Curry,Non-veg Curry,Healthy,72,165,11.0,5.0,12.0,0.5,Good protein — control the oil
+omelette,Omelette / Anda,Egg,Healthy,80,154,10.6,0.6,11.8,0.0,Add vegetables for more nutrition
+salad,Salad / Kachumber,Raw Vegetable,Healthy,95,45,2.0,8.0,0.5,3.5,Best food choice — eat before every meal!
+soup,Soup / Shorba,Soup,Healthy,82,65,3.5,8.0,2.0,1.5,Homemade soup is great — avoid packet soups
+halwa,Halwa / Indian Dessert,Dessert,Junk,30,380,4.5,55.0,16.0,1.5,High ghee and sugar — have on special occasions
+saag,Saag / Sarson da Saag,Green Vegetable,Healthy,90,50,3.0,7.0,1.5,4.0,Excellent iron and vitamins — winter must-have!
+lassi,Plain Lassi,Beverage,Healthy,72,100,5.0,12.0,3.5,0.0,Probiotic drink — great for gut health
+chai,Chai / Masala Tea,Beverage,Moderate,45,50,1.5,6.5,2.0,0.0,Limit sugar — 1-2 cups per day maximum
+coconut_water,Coconut Water,Beverage,Healthy,88,19,0.7,3.7,0.2,1.1,Best natural electrolyte drink!
+payasam,Payasam / Kheer,Dessert,Junk,25,160,3.5,28.0,4.5,0.5,High sugar — have on festivals only
+apple_pie,Apple Pie,Dessert,Junk,30,237,2.4,34.0,11.0,1.5,High sugar and butter — occasional treat
+baby_back_ribs,Pork Ribs,Non-veg,Moderate,48,292,26.0,0.0,20.0,0.0,High protein but also high fat — moderate
+baklava,Baklava,Dessert,Junk,28,428,5.0,52.0,24.0,2.0,Very high sugar and fat — small portion only
+beef_carpaccio,Beef Carpaccio,Non-veg,Moderate,55,150,20.0,1.0,8.0,0.0,Raw beef — good protein but eat carefully
+beef_tartare,Beef Tartare,Non-veg,Moderate,52,185,18.0,2.0,12.0,0.0,Raw beef — high protein
+beet_salad,Beet Salad,Salad,Healthy,85,43,1.6,10.0,0.2,2.8,Rich in antioxidants and folate — excellent!
+beignets,Beignets / Fried Dough,Fried Snack,Junk,22,306,5.0,40.0,15.0,1.0,Deep fried dough — avoid regularly
+bibimbap,Mixed Rice Bowl,Rice Dish,Healthy,72,490,18.0,72.0,14.0,4.5,Balanced Korean rice bowl — good nutrition
+bread_pudding,Bread Pudding,Dessert,Junk,28,153,5.0,25.0,4.5,0.5,High sugar dessert — occasional treat
+breakfast_burrito,Breakfast Burrito,Wrap,Moderate,55,215,10.0,25.0,9.0,2.0,Protein-rich but high in refined carbs
+bruschetta,Bruschetta,Snack,Healthy,70,180,5.0,24.0,7.0,2.5,Tomato and olive oil — heart healthy!
+caesar_salad,Caesar Salad,Salad,Moderate,62,158,6.0,8.0,13.0,1.5,Dressing adds calories — ask for less dressing
+cannoli,Cannoli,Dessert,Junk,25,332,6.0,37.0,18.0,1.0,High sugar Italian dessert — small portion
+caprese_salad,Caprese Salad,Salad,Healthy,82,150,8.0,5.0,11.0,1.0,Fresh tomato and mozzarella — excellent!
+carrot_cake,Carrot Cake,Dessert,Junk,28,415,4.5,55.0,21.0,1.5,Has some carrot nutrition but high sugar/fat
+ceviche,Ceviche,Seafood,Healthy,78,130,18.0,8.0,4.0,1.5,Fresh seafood with citrus — healthy choice!
+cheese_plate,Cheese Platter,Dairy,Moderate,48,350,22.0,2.0,28.0,0.0,High protein but high saturated fat
+cheesecake,Cheesecake,Dessert,Junk,22,258,4.5,25.0,16.0,0.5,Very high fat and sugar — occasional treat
+chicken_quesadilla,Chicken Quesadilla,Mexican,Moderate,55,220,15.0,22.0,9.0,1.5,Good protein but high in refined carbs
+chicken_wings,Chicken Wings,Fried Non-veg,Junk,38,203,30.0,0.0,8.0,0.0,High protein but often fried — baked is better
+chocolate_cake,Chocolate Cake,Dessert,Junk,18,367,5.0,52.0,16.0,2.0,Very high sugar — occasional treat only
+chocolate_mousse,Chocolate Mousse,Dessert,Junk,20,232,5.0,24.0,14.0,1.5,High sugar and fat dessert
+churros,Churros,Fried Dessert,Junk,22,527,6.5,57.0,32.0,3.0,Deep fried with sugar — very high calorie
+clam_chowder,Clam Chowder,Soup,Moderate,55,152,8.0,12.0,8.0,0.5,Creamy soup — high in sodium
+club_sandwich,Club Sandwich,Sandwich,Moderate,55,283,18.0,28.0,12.0,2.0,Multiple layers — watch portion size
+crab_cakes,Crab Cakes,Seafood,Healthy,72,185,18.0,8.0,9.0,0.5,Good protein from crab — healthy seafood!
+creme_brulee,Creme Brulee,Dessert,Junk,22,331,5.0,36.0,18.0,0.0,Very high sugar and cream dessert
+croque_madame,Croque Madame,Sandwich,Moderate,48,380,20.0,28.0,22.0,1.5,High fat sandwich — occasional meal
+cup_cakes,Cupcakes,Dessert,Junk,18,305,3.5,45.0,13.0,0.5,High sugar treat — once in a while
+deviled_eggs,Deviled Eggs,Egg Snack,Healthy,72,155,6.5,1.5,13.5,0.0,Good protein snack — but watch mayo
+donuts,Donuts,Fried Dessert,Junk,15,452,5.0,51.0,25.0,1.5,Deep fried with lots of sugar — avoid regularly
+dumplings,Dumplings / Momos,Snack,Moderate,55,150,7.0,20.0,5.0,1.5,Steamed dumplings are healthier than fried
+edamame,Edamame / Soybeans,Legume,Healthy,90,121,11.9,8.9,5.2,5.2,Excellent plant protein and fiber!
+eggs_benedict,Eggs Benedict,Egg Dish,Moderate,52,300,14.0,18.0,18.0,1.0,High in hollandaise sauce calories
+escargots,Escargots,Seafood,Moderate,58,172,16.0,2.0,12.0,0.0,High protein but acquired taste
+falafel,Falafel,Legume Snack,Healthy,75,333,13.0,32.0,18.0,5.0,Good plant protein — baked is healthier!
+filet_mignon,Filet Mignon / Steak,Non-veg,Moderate,52,271,26.0,0.0,18.0,0.0,Lean cut of beef — good protein
+fish_and_chips,Fish and Chips,Fried,Junk,32,290,15.0,30.0,13.0,2.0,Deep fried — baked fish is much healthier
+foie_gras,Foie Gras,Non-veg,Junk,30,462,11.0,4.8,44.0,0.0,Extremely high fat — luxury item
+french_fries,French Fries,Fried Snack,Junk,18,312,3.4,41.0,15.0,3.8,Deep fried and high sodium — limit strictly
+french_onion_soup,French Onion Soup,Soup,Moderate,58,75,3.5,8.0,3.5,1.0,Good nutrients but high in sodium
+french_toast,French Toast,Breakfast,Moderate,52,229,8.0,28.0,10.0,1.0,Use whole wheat bread and less sugar
+fried_calamari,Fried Calamari,Fried Seafood,Junk,32,280,17.0,20.0,15.0,0.5,Deep fried — grilled squid is healthier
+fried_rice,Fried Rice,Rice Dish,Moderate,50,163,3.8,22.0,7.0,0.7,High in oil — home cooked with veggies is better
+frozen_yogurt,Frozen Yogurt,Dessert,Moderate,48,127,3.0,28.0,1.0,0.0,Lower fat than ice cream but still has sugar
+garlic_bread,Garlic Bread,Bread,Moderate,45,350,7.0,43.0,17.0,2.0,High butter content — occasional side dish
+gnocchi,Gnocchi,Pasta,Moderate,50,131,3.0,27.0,1.0,1.5,Potato pasta — moderate calories
+greek_salad,Greek Salad,Salad,Healthy,85,74,2.0,7.0,4.8,2.0,Excellent Mediterranean diet food!
+grilled_cheese_sandwich,Grilled Cheese Sandwich,Sandwich,Moderate,45,320,14.0,28.0,16.0,1.5,High fat from cheese and butter
+grilled_salmon,Grilled Salmon,Seafood,Healthy,90,208,20.0,0.0,13.0,0.0,Excellent omega-3 — eat 2-3 times a week!
+guacamole,Guacamole,Dip,Healthy,82,160,2.0,9.0,15.0,7.0,Healthy fats from avocado — great choice!
+gyoza,Gyoza / Dumplings,Snack,Moderate,55,197,8.0,24.0,8.0,1.5,Steamed is healthier than pan-fried
+hamburger,Hamburger / Burger,Fast Food,Junk,22,295,15.0,24.0,15.0,1.5,Very high in sodium and saturated fat
+hot_and_sour_soup,Hot and Sour Soup,Soup,Healthy,72,70,4.5,8.0,2.5,0.5,Low calorie soup — good starter!
+hot_dog,Hot Dog,Fast Food,Junk,18,290,11.0,22.0,18.0,1.0,Processed meat — high sodium and fat
+huevos_rancheros,Huevos Rancheros,Egg Dish,Healthy,70,250,13.0,20.0,12.0,4.0,Good protein and fiber from beans
+hummus,Hummus,Dip,Healthy,85,177,8.0,20.0,10.0,6.0,Excellent plant protein and fiber!
+ice_cream,Ice Cream,Dessert,Junk,22,207,3.5,24.0,11.0,0.0,High sugar and fat — occasional treat
+lasagna,Lasagna,Pasta,Moderate,45,166,9.5,16.0,7.0,1.5,High calorie pasta dish — moderate portions
+lobster_bisque,Lobster Bisque,Soup,Moderate,50,210,8.0,10.0,16.0,0.5,Very creamy — high calorie soup
+lobster_roll_sandwich,Lobster Roll,Seafood Sandwich,Moderate,58,300,15.0,30.0,14.0,1.0,Good protein but high fat from mayo
+macaroni_and_cheese,Mac and Cheese,Pasta,Junk,30,164,6.5,18.0,8.0,0.5,High fat and processed — occasional meal
+macarons,Macarons,Dessert,Junk,20,383,4.5,65.0,13.0,1.0,Very high sugar — small treat only
+miso_soup,Miso Soup,Soup,Healthy,78,40,2.8,4.0,1.7,0.9,Low calorie and probiotic benefits!
+mussels,Mussels,Seafood,Healthy,82,172,24.0,7.0,4.5,0.0,High protein seafood — excellent nutrition
+nachos,Nachos,Snack,Junk,22,500,9.0,55.0,27.0,4.0,Very high fat and salt — avoid regularly
+omelette,Omelette,Egg,Healthy,80,154,10.6,0.6,11.8,0.0,Add vegetables for better nutrition
+onion_rings,Onion Rings,Fried Snack,Junk,20,411,5.0,47.0,23.0,2.5,Deep fried — very high calorie
+oysters,Oysters,Seafood,Healthy,80,68,7.0,3.9,2.5,0.0,Excellent zinc and protein source
+pad_thai,Pad Thai,Noodle Dish,Moderate,55,180,8.5,26.0,6.0,1.5,Noodles with vegetables — moderate choice
+paella,Paella,Rice Dish,Moderate,62,217,16.0,24.0,7.0,1.5,Spanish rice with seafood — balanced meal
+pancakes,Pancakes,Breakfast,Moderate,45,227,6.0,35.0,9.0,1.0,High refined carbs — use whole wheat flour
+panna_cotta,Panna Cotta,Dessert,Junk,25,292,3.5,28.0,20.0,0.0,Very high cream dessert — small portion
+peking_duck,Peking Duck,Non-veg,Moderate,50,338,19.0,0.0,29.0,0.0,High fat Chinese dish — moderate portions
+pho,Pho,Soup/Noodle,Healthy,72,215,15.0,28.0,5.0,1.5,Vietnamese noodle soup — balanced meal!
+pizza,Pizza,Fast Food,Junk,25,266,11.0,33.0,10.0,2.3,High sodium and refined flour — occasional treat
+pork_chop,Pork Chop,Non-veg,Moderate,55,231,26.0,0.0,14.0,0.0,Good protein but high saturated fat
+poutine,Poutine,Fried,Junk,18,530,17.0,56.0,28.0,3.5,Fries with gravy and cheese — very high calorie
+prime_rib,Prime Rib,Non-veg,Moderate,48,340,24.0,0.0,27.0,0.0,High protein but very high fat
+pulled_pork_sandwich,Pulled Pork Sandwich,Sandwich,Junk,35,400,22.0,38.0,18.0,2.0,High calorie and fat sandwich
+ramen,Ramen,Noodle Soup,Moderate,50,436,21.0,59.0,12.0,3.0,High sodium — home made is much healthier
+ravioli,Ravioli,Pasta,Moderate,48,180,8.0,24.0,6.0,1.5,Stuffed pasta — portion control important
+red_velvet_cake,Red Velvet Cake,Dessert,Junk,18,390,5.0,52.0,19.0,0.5,Very high sugar and fat dessert
+risotto,Risotto,Rice Dish,Moderate,52,166,4.0,28.0,5.0,0.5,Creamy rice — high calorie but moderate
+samosa,Samosa,Fried Snack,Junk,28,308,5.5,32.0,18.0,2.1,Bake instead of fry to make healthier
+sashimi,Sashimi,Raw Seafood,Healthy,88,170,20.0,0.0,10.0,0.0,Best way to eat fish — raw and nutritious!
+scallops,Scallops,Seafood,Healthy,82,111,20.5,5.4,0.8,0.0,Excellent lean protein seafood
+seaweed_salad,Seaweed Salad,Salad,Healthy,85,45,2.0,8.0,0.5,2.5,Rich in minerals and iodine — superfood!
+shrimp_and_grits,Shrimp and Grits,Seafood,Moderate,55,250,15.0,28.0,9.0,1.5,Good shrimp protein but grits add carbs
+spaghetti_bolognese,Spaghetti Bolognese,Pasta,Moderate,50,185,9.0,22.0,8.0,2.0,Add more veggies and use whole wheat pasta
+spaghetti_carbonara,Spaghetti Carbonara,Pasta,Junk,35,300,12.0,38.0,12.0,2.0,Very high fat from egg and cheese sauce
+spring_rolls,Spring Rolls / Momos,Snack,Moderate,55,150,5.0,22.0,6.0,2.0,Steamed is much healthier than fried!
+steak,Steak / Grilled Meat,Non-veg,Moderate,58,271,26.0,0.0,18.0,0.0,High protein — lean cuts are healthier
+strawberry_shortcake,Strawberry Shortcake,Dessert,Junk,28,297,4.5,40.0,14.0,1.5,High sugar dessert — fresh strawberries alone are healthier
+sushi,Sushi,Japanese Food,Healthy,78,143,5.7,27.0,2.1,0.7,Fresh fish with rice — great balanced meal!
+tacos,Tacos,Mexican Food,Moderate,50,226,9.0,24.0,10.0,2.5,Depends on filling — grilled meat tacos are healthier
+takoyaki,Takoyaki,Snack,Moderate,48,200,8.0,22.0,9.0,0.5,Japanese octopus balls — moderate choice
+tiramisu,Tiramisu,Dessert,Junk,22,240,4.5,28.0,12.0,0.5,High fat Italian dessert — small portion
+tuna_tartare,Tuna Tartare,Seafood,Healthy,85,144,23.0,3.0,5.0,0.0,Raw tuna — excellent protein and omega-3!
+waffles,Waffles,Breakfast,Moderate,42,291,8.0,37.0,13.0,1.3,High refined carbs — use whole grain flour
+chicken_wings,Chicken Wings,Fried Non-veg,Junk,38,203,30.0,0.0,8.0,0.0,Baked wings are much healthier than fried
+bibimbap,Bibimbap / Mixed Rice Bowl,Rice Dish,Healthy,72,490,18.0,72.0,14.0,4.5,Balanced Korean rice bowl — good nutrition
