@@ -12,7 +12,7 @@ from datetime import datetime, date, timedelta
 from transformers import pipeline
 
 st.set_page_config(
-    page_title="NutriSnap - AI Food Recognition & Nutrition Tracker",
+    page_title="NutriSnap",
     page_icon="🥗",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -96,9 +96,78 @@ def load_db():
     return pd.read_csv("food_database.csv")
 
 
+
 # ══════════════════════════════════════════════════════════════════
-# FEEDBACK / CORRECTION SYSTEM
+# ONLINE NUTRITION FETCH — searches web if food not in DB
 # ══════════════════════════════════════════════════════════════════
+def fetch_nutrition_online(food_name: str):
+    """
+    Fetch nutrition info from Open Food Facts API (free, no key needed).
+    Falls back to reasonable defaults if not found.
+    """
+    try:
+        import urllib.request, urllib.parse, urllib.error
+        query   = urllib.parse.quote(food_name.strip())
+        url     = (
+            f"https://world.openfoodfacts.org/cgi/search.pl"
+            f"?search_terms={query}&search_simple=1"
+            f"&action=process&json=1&page_size=1"
+        )
+        req  = urllib.request.Request(url,
+                   headers={"User-Agent": "NutriSnap/1.0"})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode())
+
+        products = data.get("products", [])
+        if not products:
+            return None
+
+        p    = products[0]
+        nutr = p.get("nutriments", {})
+
+        cal     = nutr.get("energy-kcal_100g") or \
+                  nutr.get("energy_100g", 0) / 4.184
+        protein = nutr.get("proteins_100g", 0)
+        carbs   = nutr.get("carbohydrates_100g", 0)
+        fats    = nutr.get("fat_100g", 0)
+        fiber   = nutr.get("fiber_100g", 0)
+
+        cal = round(float(cal or 0), 1)
+
+        # Simple health score formula
+        score = 50
+        if protein > 10  : score += 10
+        if fiber   > 3   : score += 10
+        if fats    < 5   : score += 10
+        if carbs   < 20  : score += 10
+        if cal     > 400 : score -= 20
+        if fats    > 20  : score -= 15
+        score = max(0, min(100, score))
+
+        cls = ("Healthy"  if score >= 70 else
+               "Junk"     if score <  40 else "Moderate")
+
+        return {
+            "indian_name"       : food_name.strip().title(),
+            "food_name"         : food_name.strip().lower().replace(" ","_"),
+            "classification"    : cls,
+            "health_score"      : score,
+            "calories_per_100g" : cal,
+            "protein_g"         : round(float(protein or 0), 1),
+            "carbs_g"           : round(float(carbs   or 0), 1),
+            "fats_g"            : round(float(fats    or 0), 1),
+            "fiber_g"           : round(float(fiber   or 0), 1),
+            "tip"               : f"Nutrition fetched online for {food_name.title()}.",
+            "category"          : "Online",
+            "_was_corrected"    : True,
+            "_original_ai_label": "",
+            "_correction_count" : 1,
+            "_source"           : "Open Food Facts",
+        }
+    except Exception:
+        return None
+
+
 FEEDBACK_FILE = "/tmp/user_feedback.json"
 
 def load_feedback():
@@ -394,7 +463,7 @@ with st.sidebar:
 st.markdown("""
 <div class="header-box">
   <h1 style="margin:0;font-size:2.2em;font-weight:800">
-    🥗 NutriSnap - AI Food Recognition & Nutrition Tracker
+    🥗 NutriSnap
   </h1>
   <p style="margin:6px 0 0;opacity:.9">
     Upload meal photos → AI identifies → Tracks health →
@@ -618,23 +687,11 @@ if page == "📸 Log Meal":
                 orig_label    = nutrition.get("_original_ai_label", raw_label)
                 corr_count    = nutrition.get("_correction_count", 0)
 
-                correction_note = ""
-                if was_corrected:
-                    correction_note = f"""
-                    <span class="correction-badge">
-                      🧠 Learned from your correction ({corr_count}x)
-                    </span><br>
-                    <small style="color:#888">
-                      AI said: {orig_label.replace('_',' ').title()}
-                      → You taught: {nutrition['indian_name']}
-                    </small>
-                    """
-
+                # ✅ FIX: render card and correction note separately
                 st.markdown(f"""
                 <div class="meal-card">
                   <h3>🍽️ {nutrition['indian_name']}</h3>
                   <p>{badge(nutrition['classification'])}</p>
-                  {correction_note}
                   <p style="color:#666;font-size:.9em;margin-top:6px">
                     AI detected:
                     <b>{raw_label.replace('_',' ').title()}</b>
@@ -642,6 +699,23 @@ if page == "📸 Log Meal":
                   </p>
                 </div>
                 """, unsafe_allow_html=True)
+
+                # ✅ FIX: show correction note as separate element
+                if was_corrected:
+                    st.markdown(
+                        f'<div style="background:linear-gradient(135deg,#7c4dff22,#e040fb22);'
+                        f'border-radius:10px;padding:10px 14px;margin:6px 0;'
+                        f'border-left:4px solid #7c4dff">'
+                        f'<span style="background:linear-gradient(135deg,#7c4dff,#e040fb);'
+                        f'color:white;padding:3px 10px;border-radius:100px;'
+                        f'font-size:11px;font-weight:700">'
+                        f'🧠 Learned from your correction ({corr_count}x)</span><br>'
+                        f'<small style="color:#555;margin-top:4px;display:block">'
+                        f'AI said: <b>{orig_label.replace("_"," ").title()}</b> '
+                        f'→ You taught: <b>{nutrition["indian_name"]}</b>'
+                        f'</small></div>',
+                        unsafe_allow_html=True
+                    )
 
                 if preds and len(preds) > 1:
                     with st.expander("🔍 Other possible foods"):
@@ -727,25 +801,228 @@ if page == "📸 Log Meal":
 
                 # ── CORRECTION UI — STAYS VISIBLE ─────────────────
                 if st.session_state.show_correction:
-                    st.markdown("**What food is this actually?**")
-                    correct_choice = st.selectbox(
-                        "Select correct food:",
-                        db["indian_name"].tolist(),
-                        key="correction_select"
+                    st.markdown("**🔍 What food is this actually?**")
+
+                    # ── INPUT MODE TOGGLE ──────────────────────────
+                    input_mode = st.radio(
+                        "How do you want to enter the food?",
+                        ["🔽 Pick from list", "⌨️ Type food name"],
+                        horizontal=True,
+                        key="input_mode_radio"
                     )
+
+                    correct_choice = None
+                    custom_nutrition = None
+
+                    # ── MODE 1: DROPDOWN WITH SEARCH ───────────────
+                    if input_mode == "🔽 Pick from list":
+                        # Search filter
+                        search_term = st.text_input(
+                            "🔍 Filter list (type to search):",
+                            placeholder="e.g. dal, rice, roti...",
+                            key="search_filter"
+                        )
+                        all_foods = db["indian_name"].tolist()
+                        if search_term:
+                            filtered_foods = [
+                                f for f in all_foods
+                                if search_term.lower() in f.lower()
+                            ]
+                            if not filtered_foods:
+                                st.warning(
+                                    "No match in database. "
+                                    "Try typing the food name directly!"
+                                )
+                                filtered_foods = all_foods
+                        else:
+                            filtered_foods = all_foods
+
+                        correct_choice = st.selectbox(
+                            f"Select ({len(filtered_foods)} foods shown):",
+                            filtered_foods,
+                            key="correction_select"
+                        )
+
+                    # ── MODE 2: TYPE CUSTOM FOOD NAME ──────────────
+                    else:
+                        st.info(
+                            "💡 Type any food name — we'll search "
+                            "nutrition online if not in database!"
+                        )
+                        custom_name = st.text_input(
+                            "Food name:",
+                            placeholder="e.g. Pav Bhaji, Momos, Biryani...",
+                            key="custom_food_name"
+                        )
+
+                        if custom_name:
+                            # Try exact match in DB first
+                            db_match = db[
+                                db["indian_name"].str.lower() ==
+                                custom_name.strip().lower()
+                            ]
+                            partial_match = db[
+                                db["indian_name"].str.lower().str.contains(
+                                    custom_name.strip().lower(), na=False
+                                )
+                            ]
+
+                            if not db_match.empty:
+                                st.success(
+                                    f"✅ Found in database: "
+                                    f"{db_match.iloc[0]['indian_name']}"
+                                )
+                                correct_choice  = db_match.iloc[0]["indian_name"]
+                                custom_nutrition = None
+
+                            elif not partial_match.empty:
+                                st.info(
+                                    f"🔍 Similar found: "
+                                    f"{partial_match.iloc[0]['indian_name']}"
+                                )
+                                use_similar = st.checkbox(
+                                    f"Use '{partial_match.iloc[0]['indian_name']}' instead?",
+                                    key="use_similar"
+                                )
+                                if use_similar:
+                                    correct_choice   = partial_match.iloc[0]["indian_name"]
+                                    custom_nutrition = None
+                                else:
+                                    correct_choice = None
+                                    # Try online fetch
+                                    if st.button("🌐 Search Nutrition Online",
+                                                 key="search_online_partial"):
+                                        with st.spinner(
+                                            f"Searching nutrition for "
+                                            f"'{custom_name}'... 🌐"
+                                        ):
+                                            result = fetch_nutrition_online(custom_name)
+                                        if result:
+                                            st.session_state["online_nutrition"] = result
+                                            st.success(
+                                                f"✅ Found online! "
+                                                f"{result['calories_per_100g']} kcal · "
+                                                f"{result['protein_g']}g protein"
+                                            )
+                                        else:
+                                            st.session_state["online_nutrition"] = None
+                                            st.warning(
+                                                "Not found online either. "
+                                                "Fill details manually below."
+                                            )
+                                    custom_nutrition = st.session_state.get(
+                                        "online_nutrition"
+                                    )
+
+                            else:
+                                # Not in DB — search online automatically
+                                correct_choice = None
+                                col_srch, _ = st.columns([1,2])
+                                with col_srch:
+                                    search_clicked = st.button(
+                                        "🌐 Search Nutrition Online",
+                                        key="search_online_btn"
+                                    )
+                                if search_clicked:
+                                    with st.spinner(
+                                        f"Searching nutrition for "
+                                        f"'{custom_name}'... 🌐"
+                                    ):
+                                        result = fetch_nutrition_online(custom_name)
+                                    if result:
+                                        st.session_state["online_nutrition"] = result
+                                    else:
+                                        st.session_state["online_nutrition"] = "not_found"
+
+                                online = st.session_state.get("online_nutrition")
+
+                                if online and online != "not_found":
+                                    st.success(
+                                        f"✅ Found on Open Food Facts!"
+                                    )
+                                    o1,o2,o3,o4 = st.columns(4)
+                                    o1.metric("🔥 Cal",
+                                        online["calories_per_100g"])
+                                    o2.metric("💪 Protein",
+                                        f"{online['protein_g']}g")
+                                    o3.metric("🌾 Carbs",
+                                        f"{online['carbs_g']}g")
+                                    o4.metric("🧈 Fats",
+                                        f"{online['fats_g']}g")
+                                    custom_nutrition = online
+
+                                elif online == "not_found":
+                                    st.warning(
+                                        f"'{custom_name}' not found online. "
+                                        f"Fill details manually:"
+                                    )
+                                    cls_choice = st.selectbox(
+                                        "Health classification:",
+                                        ["Healthy","Moderate","Junk"],
+                                        key="custom_cls2"
+                                    )
+                                    score_choice = st.slider(
+                                        "Health score (0-100):",
+                                        0, 100, 55, key="custom_score2"
+                                    )
+                                    cal_choice = st.number_input(
+                                        "Calories per 100g:",
+                                        0, 1000, 200, key="custom_cal2"
+                                    )
+                                    custom_nutrition = {
+                                        "indian_name"       : custom_name.strip().title(),
+                                        "food_name"         : custom_name.strip().lower().replace(" ","_"),
+                                        "classification"    : cls_choice,
+                                        "health_score"      : score_choice,
+                                        "calories_per_100g" : cal_choice,
+                                        "protein_g"         : 6.0,
+                                        "carbs_g"           : 28.0,
+                                        "fats_g"            : 7.0,
+                                        "fiber_g"           : 2.0,
+                                        "tip"               : "Custom food added by user.",
+                                        "_was_corrected"    : True,
+                                        "_original_ai_label": raw_label,
+                                        "_correction_count" : 1,
+                                    }
+                                else:
+                                    custom_nutrition = None
+
+                    # ── SAVE CORRECTION BUTTON ─────────────────────
                     if st.button("💾 Save Correction",
                                  key="save_correction"):
-                        row = db[db["indian_name"]==correct_choice].iloc[0]
-                        add_correction(raw_label, row["food_name"])
-                        st.success(
-                            f"🧠 Saved! Next time AI sees "
-                            f"'{raw_label.replace('_',' ').title()}' "
-                            f"it will show '{correct_choice}'!"
-                        )
-                        st.session_state.show_correction = False
-                        st.session_state.nutrition = get_nutrition(
-                            raw_label, db)
-                        st.rerun()
+
+                        if custom_nutrition:
+                            # Save custom food correction
+                            add_correction(
+                                raw_label,
+                                custom_nutrition["food_name"]
+                            )
+                            st.session_state.nutrition = custom_nutrition
+                            st.success(
+                                f"🧠 Saved! '{custom_nutrition['indian_name']}' "
+                                f"will be shown next time!"
+                            )
+                            st.session_state.show_correction = False
+                            st.rerun()
+
+                        elif correct_choice:
+                            row = db[
+                                db["indian_name"]==correct_choice
+                            ].iloc[0]
+                            add_correction(raw_label, row["food_name"])
+                            st.success(
+                                f"🧠 Saved! Next time AI sees "
+                                f"'{raw_label.replace('_',' ').title()}' "
+                                f"it will show '{correct_choice}'!"
+                            )
+                            st.session_state.show_correction = False
+                            st.session_state.nutrition = get_nutrition(
+                                raw_label, db)
+                            st.rerun()
+                        else:
+                            st.warning(
+                                "Please enter or select a food name first!"
+                            )
 
         else:
             st.markdown("""
