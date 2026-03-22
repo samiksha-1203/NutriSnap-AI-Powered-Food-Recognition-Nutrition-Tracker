@@ -1,5 +1,5 @@
-# ✅ AI FOOD HEALTH TRACKER — With Feedback Learning!
-# App learns from your corrections and gets smarter over time
+# ✅ NUTRISNAP — AI Food Recognition & Nutrition Tracker
+# Fixed version with session_state for persistent feedback buttons
 # 100% Free · No API Key · MobileNet Food101 · Indian Food Database
 
 import streamlit as st
@@ -12,7 +12,7 @@ from datetime import datetime, date, timedelta
 from transformers import pipeline
 
 st.set_page_config(
-    page_title="AI Food Recognition & Nutrition Tracker",
+    page_title="NutriSnap - AI Food Recognition & Nutrition Tracker",
     page_icon="🥗",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -98,18 +98,16 @@ def load_db():
 
 # ══════════════════════════════════════════════════════════════════
 # FEEDBACK / CORRECTION SYSTEM
-# App learns from your corrections!
 # ══════════════════════════════════════════════════════════════════
-FEEDBACK_FILE = "user_feedback.json"
+FEEDBACK_FILE = "/tmp/user_feedback.json"
 
 def load_feedback():
-    """Load all corrections and confirmations made by user."""
     if os.path.exists(FEEDBACK_FILE):
         with open(FEEDBACK_FILE) as f:
             return json.load(f)
     return {
-        "corrections"  : {},   # {ai_label: {correct_label: count}}
-        "confirmations": {},   # {ai_label: count}
+        "corrections"  : {},
+        "confirmations": {},
         "total_corrections"  : 0,
         "total_confirmations": 0,
     }
@@ -119,10 +117,6 @@ def save_feedback(data):
         json.dump(data, f, indent=2)
 
 def add_correction(ai_label: str, correct_label: str):
-    """
-    User told us AI was WRONG.
-    Save: for ai_label, the correct answer is correct_label.
-    """
     data = load_feedback()
     if ai_label not in data["corrections"]:
         data["corrections"][ai_label] = {}
@@ -132,7 +126,6 @@ def add_correction(ai_label: str, correct_label: str):
     save_feedback(data)
 
 def add_confirmation(ai_label: str):
-    """User told us AI was CORRECT. Reinforce this label."""
     data = load_feedback()
     data["confirmations"][ai_label] = \
         data["confirmations"].get(ai_label, 0) + 1
@@ -141,24 +134,15 @@ def add_confirmation(ai_label: str):
     save_feedback(data)
 
 def apply_corrections(ai_label: str):
-    """
-    BEFORE showing result — check if user has corrected this before.
-    If yes → use their correction (most frequent one).
-    Returns: (final_label, was_corrected, correction_count)
-    """
     data = load_feedback()
     corrections = data["corrections"].get(ai_label, {})
-
     if corrections:
-        # Use the correction given most times
         best_correction = max(corrections, key=corrections.get)
         count           = corrections[best_correction]
         return best_correction, True, count
-
-    return ai_label, False, 0   # no correction → use AI label
+    return ai_label, False, 0
 
 def get_correction_stats():
-    """Return stats for sidebar display."""
     data = load_feedback()
     return {
         "total_corrections"  : data.get("total_corrections",   0),
@@ -168,27 +152,17 @@ def get_correction_stats():
 
 
 # ══════════════════════════════════════════════════════════════════
-# NUTRITION LOOKUP — checks corrections first!
+# NUTRITION LOOKUP
 # ══════════════════════════════════════════════════════════════════
 def get_nutrition(label: str, db: pd.DataFrame):
-    """
-    1. Check if user has corrected this label before
-    2. If yes → use corrected label
-    3. Look up in food database
-    4. Return nutrition dict
-    """
     label = label.replace("food101_", "").strip().lower()
-
-    # ✅ CHECK CORRECTIONS FIRST — this is how app learns!
     corrected, was_corrected, corr_count = apply_corrections(label)
     original_label = label
     if was_corrected:
         label = corrected
 
-    # Exact match
     match = db[db["food_name"] == label]
 
-    # Partial match
     if match.empty:
         for _, row in db.iterrows():
             if label in str(row["food_name"]) or \
@@ -196,7 +170,6 @@ def get_nutrition(label: str, db: pd.DataFrame):
                 match = db[db["food_name"] == row["food_name"]]
                 break
 
-    # Word match
     if match.empty:
         words = [w for w in label.split("_") if len(w) > 3]
         for word in words:
@@ -207,7 +180,6 @@ def get_nutrition(label: str, db: pd.DataFrame):
             if not match.empty:
                 break
 
-    # Default fallback
     if match.empty:
         return {
             "indian_name"       : label.replace("_"," ").title(),
@@ -298,7 +270,7 @@ def draw_detections(img, foods):
 # ══════════════════════════════════════════════════════════════════
 # DATA STORAGE
 # ══════════════════════════════════════════════════════════════════
-LOG = "food_log.json"
+LOG = "/tmp/food_log.json"
 
 def load_log():
     if os.path.exists(LOG):
@@ -345,10 +317,30 @@ def badge(cls):
 
 
 # ══════════════════════════════════════════════════════════════════
+# SESSION STATE INIT — FIXES FEEDBACK BUTTONS DISAPPEARING
+# ══════════════════════════════════════════════════════════════════
+def init_session_state():
+    defaults = {
+        "nutrition"      : None,
+        "raw_label"      : None,
+        "conf"           : None,
+        "preds"          : None,
+        "show_correction": False,
+        "meal_saved"     : False,
+        "confirmed"      : False,
+    }
+    for k, v in defaults.items():
+        if k not in st.session_state:
+            st.session_state[k] = v
+
+init_session_state()
+
+
+# ══════════════════════════════════════════════════════════════════
 # SIDEBAR
 # ══════════════════════════════════════════════════════════════════
 with st.sidebar:
-    st.markdown("## 🥗 Food Tracker")
+    st.markdown("## 🥗 NutriSnap")
     st.markdown("**✅ 100% Free — No API Key!**")
     st.markdown("*Learns from your corrections!*")
     st.markdown("---")
@@ -375,7 +367,6 @@ with st.sidebar:
     else:
         st.info("No meals yet!")
 
-    # ── Feedback stats in sidebar ──
     stats = get_correction_stats()
     if stats["total_corrections"] > 0 or \
        stats["total_confirmations"] > 0:
@@ -403,7 +394,7 @@ with st.sidebar:
 st.markdown("""
 <div class="header-box">
   <h1 style="margin:0;font-size:2.2em;font-weight:800">
-    🥗 AI Food Health Tracker
+    🥗 NutriSnap - AI Food Recognition & Nutrition Tracker
   </h1>
   <p style="margin:6px 0 0;opacity:.9">
     Upload meal photos → AI identifies → Tracks health →
@@ -463,195 +454,24 @@ if page == "📸 Log Meal":
                 if "Single" in mode:
                     with st.spinner("Identifying... ⚡"):
                         try:
-                            preds     = model(img)
-                            top       = preds[0]
-                            raw_label = top["label"]
-                            conf      = round(top["score"]*100, 1)
-                            nutrition = get_nutrition(raw_label, db)
-
-                            # Show if correction was applied
-                            was_corrected = nutrition.get(
-                                "_was_corrected", False)
-                            orig_label    = nutrition.get(
-                                "_original_ai_label", raw_label)
-                            corr_count    = nutrition.get(
-                                "_correction_count", 0)
-
-                            # Result card
-                            correction_note = ""
-                            if was_corrected:
-                                correction_note = f"""
-                                <span class="correction-badge">
-                                  🧠 Learned from your correction
-                                  ({corr_count}x)
-                                </span><br>
-                                <small style="color:#888">
-                                  AI said: {orig_label.replace('_',' ').title()}
-                                  → You taught: {nutrition['indian_name']}
-                                </small>
-                                """
-
-                            st.markdown(f"""
-                            <div class="meal-card">
-                              <h3>🍽️ {nutrition['indian_name']}</h3>
-                              <p>{badge(nutrition['classification'])}</p>
-                              {correction_note}
-                              <p style="color:#666;font-size:.9em;
-                                        margin-top:6px">
-                                AI detected:
-                                <b>{raw_label.replace('_',' ').title()}</b>
-                                ({conf}% confident)
-                              </p>
-                            </div>
-                            """, unsafe_allow_html=True)
-
-                            # Other predictions
-                            if len(preds) > 1:
-                                with st.expander(
-                                    "🔍 Other possible foods"
-                                ):
-                                    for p in preds[1:]:
-                                        n   = get_nutrition(
-                                            p["label"], db)
-                                        pct = round(
-                                            p["score"]*100, 1)
-                                        st.write(
-                                            f"• **{n['indian_name']}**"
-                                            f" — {pct}%"
-                                        )
-
-                            st.plotly_chart(
-                                gauge(nutrition["health_score"]),
-                                use_container_width=True
-                            )
-
-                            n1,n2,n3,n4 = st.columns(4)
-                            n1.metric("🔥 Cal",
-                                nutrition["calories_per_100g"])
-                            n2.metric("💪 Protein",
-                                f"{nutrition['protein_g']}g")
-                            n3.metric("🌾 Carbs",
-                                f"{nutrition['carbs_g']}g")
-                            n4.metric("🧈 Fats",
-                                f"{nutrition['fats_g']}g")
-
-                            cls = nutrition["classification"]
-                            tip = nutrition["tip"]
-                            if cls=="Healthy":
-                                st.success(f"💡 {tip}")
-                            elif cls=="Moderate":
-                                st.warning(f"💡 {tip}")
-                            else:
-                                st.error(f"💡 {tip}")
-
-                            # ── FEEDBACK BUTTONS ──────────────────
-                            st.markdown("""
-                            <div class="feedback-box">
-                              <b>🤔 Was this identification correct?</b>
-                            </div>
-                            """, unsafe_allow_html=True)
-
-                            fb1, fb2 = st.columns(2)
-                            with fb1:
-                                if st.button(
-                                    "✅ Yes, correct!",
-                                    key="confirm_btn",
-                                    use_container_width=True
-                                ):
-                                    add_confirmation(raw_label)
-                                    st.success(
-                                        "🧠 Thanks! AI remembers "
-                                        "this is correct."
-                                    )
-
-                            with fb2:
-                                if st.button(
-                                    "❌ No, wrong food!",
-                                    key="wrong_btn",
-                                    use_container_width=True
-                                ):
-                                    st.session_state[
-                                        "show_correction"
-                                    ] = True
-
-                            # Show correction UI
-                            if st.session_state.get(
-                                "show_correction"
-                            ):
-                                st.markdown(
-                                    "**What food is this actually?**"
-                                )
-                                correct_choice = st.selectbox(
-                                    "Select correct food:",
-                                    db["indian_name"].tolist(),
-                                    key="correction_select"
-                                )
-                                if st.button(
-                                    "💾 Save Correction",
-                                    key="save_correction"
-                                ):
-                                    row = db[
-                                        db["indian_name"] ==
-                                        correct_choice
-                                    ].iloc[0]
-                                    add_correction(
-                                        raw_label,
-                                        row["food_name"]
-                                    )
-                                    st.success(
-                                        f"🧠 Saved! Next time AI "
-                                        f"sees '{raw_label.replace('_',' ').title()}' "
-                                        f"it will show "
-                                        f"'{correct_choice}'!"
-                                    )
-                                    st.session_state[
-                                        "show_correction"
-                                    ] = False
-                                    # Re-get nutrition with correction
-                                    nutrition = get_nutrition(
-                                        raw_label, db
-                                    )
-                                    st.rerun()
-
-                            # Save meal
-                            add_meal({
-                                "date"          : meal_date.isoformat(),
-                                "meal_type"     : meal_type,
-                                "food_detected" : str(
-                                    nutrition["indian_name"]),
-                                "food101_label" : raw_label,
-                                "classification": str(
-                                    nutrition["classification"]),
-                                "health_score"  : int(
-                                    nutrition["health_score"]),
-                                "calories"      : int(
-                                    nutrition["calories_per_100g"]),
-                                "protein_g"     : float(
-                                    nutrition["protein_g"]),
-                                "carbs_g"       : float(
-                                    nutrition["carbs_g"]),
-                                "fats_g"        : float(
-                                    nutrition["fats_g"]),
-                                "fiber_g"       : float(
-                                    nutrition["fiber_g"]),
-                                "tip"           : str(
-                                    nutrition["tip"]),
-                                "notes"         : notes,
-                                "confidence"    : conf,
-                                "was_corrected" : was_corrected,
-                                "logged_at"     : datetime.now(
-                                    ).isoformat(),
-                            })
-                            st.success("✅ Meal saved!")
-
+                            preds = model(img)
+                            top   = preds[0]
+                            # ✅ Store in session_state so it persists
+                            st.session_state.raw_label  = top["label"]
+                            st.session_state.conf       = round(top["score"]*100, 1)
+                            st.session_state.nutrition  = get_nutrition(
+                                st.session_state.raw_label, db)
+                            st.session_state.preds      = preds
+                            st.session_state.meal_saved = False
+                            st.session_state.confirmed  = False
+                            st.session_state.show_correction = False
                         except Exception as e:
                             st.error(f"Error: {e}")
 
                 # ── MULTIPLE FOOD / THALI MODE ────────────────────
                 else:
                     with st.spinner(
-                        f"Scanning {grid_size}×{grid_size} "
-                        f"regions... 🔍"
+                        f"Scanning {grid_size}×{grid_size} regions... 🔍"
                     ):
                         try:
                             foods = detect_multiple_foods(
@@ -659,24 +479,15 @@ if page == "📸 Log Meal":
 
                             if not foods:
                                 st.warning(
-                                    "No food detected. "
-                                    "Try a clearer photo!"
-                                )
+                                    "No food detected. Try a clearer photo!")
                             else:
-                                annotated = draw_detections(
-                                    img, foods)
+                                annotated = draw_detections(img, foods)
                                 st.image(
                                     annotated,
-                                    caption=(
-                                        f"✅ {len(foods)} "
-                                        f"food(s) detected!"
-                                    ),
+                                    caption=f"✅ {len(foods)} food(s) detected!",
                                     use_container_width=True
                                 )
-                                st.markdown(
-                                    f"### 🍱 Found "
-                                    f"{len(foods)} items!"
-                                )
+                                st.markdown(f"### 🍱 Found {len(foods)} items!")
 
                                 tot_cal = tot_pro = 0
                                 tot_carbs = tot_fats = 0
@@ -691,7 +502,6 @@ if page == "📸 Log Meal":
                                         "Junk"    : "#cb2d3e"
                                     }.get(cls, "#888")
 
-                                    # Show correction badge
                                     corr_note = ""
                                     if n.get("_was_corrected"):
                                         corr_note = (
@@ -709,8 +519,7 @@ if page == "📸 Log Meal":
                                           &nbsp;{badge(cls)}
                                           &nbsp;{corr_note}
                                         </div>
-                                        <div style="font-size:.85em;
-                                                    color:{cc}">
+                                        <div style="font-size:.85em;color:{cc}">
                                           Score: <b>{n['health_score']}/100</b>
                                           &nbsp;🔥 {n['calories_per_100g']} kcal
                                         </div>
@@ -735,27 +544,19 @@ if page == "📸 Log Meal":
                                     scores.append(n["health_score"])
                                     all_cls.append(cls)
 
-                                avg_score = round(
-                                    sum(scores)/len(scores), 1)
+                                avg_score = round(sum(scores)/len(scores), 1)
 
                                 st.markdown("---")
-                                st.markdown(
-                                    "### 📊 Combined Summary")
+                                st.markdown("### 📊 Combined Summary")
                                 s1,s2,s3,s4,s5 = st.columns(5)
-                                s1.metric("🏆 Score",
-                                    f"{avg_score}/100")
-                                s2.metric("🔥 Cal",
-                                    int(tot_cal))
-                                s3.metric("💪 Protein",
-                                    f"{tot_pro:.1f}g")
-                                s4.metric("🌾 Carbs",
-                                    f"{tot_carbs:.1f}g")
-                                s5.metric("🧈 Fats",
-                                    f"{tot_fats:.1f}g")
+                                s1.metric("🏆 Score",   f"{avg_score}/100")
+                                s2.metric("🔥 Cal",     int(tot_cal))
+                                s3.metric("💪 Protein", f"{tot_pro:.1f}g")
+                                s4.metric("🌾 Carbs",   f"{tot_carbs:.1f}g")
+                                s5.metric("🧈 Fats",    f"{tot_fats:.1f}g")
 
                                 st.plotly_chart(
-                                    gauge(avg_score,
-                                          "Overall Score"),
+                                    gauge(avg_score, "Overall Score"),
                                     use_container_width=True
                                 )
 
@@ -763,13 +564,11 @@ if page == "📸 Log Meal":
                                 junk_ct     = all_cls.count("Junk")
                                 moderate_ct = all_cls.count("Moderate")
 
-                                if junk_ct == 0 and \
-                                   healthy_ct >= moderate_ct:
+                                if junk_ct == 0 and healthy_ct >= moderate_ct:
                                     st.success(
                                         f"🌟 Great thali! "
                                         f"{healthy_ct} healthy · "
-                                        f"{moderate_ct} moderate · "
-                                        f"0 junk!"
+                                        f"{moderate_ct} moderate · 0 junk!"
                                     )
                                 elif junk_ct > 0:
                                     st.warning(
@@ -778,17 +577,15 @@ if page == "📸 Log Meal":
                                     )
 
                                 food_names = " + ".join(
-                                    [f["nutrition"]["indian_name"]
-                                     for f in foods]
+                                    [f["nutrition"]["indian_name"] for f in foods]
                                 )
                                 add_meal({
                                     "date"          : meal_date.isoformat(),
                                     "meal_type"     : meal_type,
                                     "food_detected" : food_names[:80],
                                     "food101_label" : "multi_food",
-                                    "classification": max(
-                                        set(all_cls),
-                                        key=all_cls.count),
+                                    "classification": max(set(all_cls),
+                                                          key=all_cls.count),
                                     "health_score"  : avg_score,
                                     "calories"      : int(tot_cal),
                                     "protein_g"     : round(tot_pro,1),
@@ -798,19 +595,157 @@ if page == "📸 Log Meal":
                                     "tip"           : f"{len(foods)} items detected",
                                     "notes"         : notes,
                                     "confidence"    : round(
-                                        sum(f["confidence"]
-                                            for f in foods)
+                                        sum(f["confidence"] for f in foods)
                                         /len(foods), 1),
                                     "was_corrected" : False,
-                                    "logged_at"     : datetime.now(
-                                        ).isoformat(),
+                                    "logged_at"     : datetime.now().isoformat(),
                                 })
-                                st.success(
-                                    f"✅ {len(foods)} items saved!"
-                                )
+                                st.success(f"✅ {len(foods)} items saved!")
 
                         except Exception as e:
                             st.error(f"Error: {e}")
+
+            # ══════════════════════════════════════════════════════
+            # ✅ SHOW RESULTS FROM SESSION STATE — ALWAYS VISIBLE
+            # ══════════════════════════════════════════════════════
+            if st.session_state.nutrition is not None and "Single" in mode:
+                nutrition = st.session_state.nutrition
+                raw_label = st.session_state.raw_label
+                conf      = st.session_state.conf
+                preds     = st.session_state.preds
+
+                was_corrected = nutrition.get("_was_corrected", False)
+                orig_label    = nutrition.get("_original_ai_label", raw_label)
+                corr_count    = nutrition.get("_correction_count", 0)
+
+                correction_note = ""
+                if was_corrected:
+                    correction_note = f"""
+                    <span class="correction-badge">
+                      🧠 Learned from your correction ({corr_count}x)
+                    </span><br>
+                    <small style="color:#888">
+                      AI said: {orig_label.replace('_',' ').title()}
+                      → You taught: {nutrition['indian_name']}
+                    </small>
+                    """
+
+                st.markdown(f"""
+                <div class="meal-card">
+                  <h3>🍽️ {nutrition['indian_name']}</h3>
+                  <p>{badge(nutrition['classification'])}</p>
+                  {correction_note}
+                  <p style="color:#666;font-size:.9em;margin-top:6px">
+                    AI detected:
+                    <b>{raw_label.replace('_',' ').title()}</b>
+                    ({conf}% confident)
+                  </p>
+                </div>
+                """, unsafe_allow_html=True)
+
+                if preds and len(preds) > 1:
+                    with st.expander("🔍 Other possible foods"):
+                        for p in preds[1:]:
+                            n   = get_nutrition(p["label"], db)
+                            pct = round(p["score"]*100, 1)
+                            st.write(f"• **{n['indian_name']}** — {pct}%")
+
+                st.plotly_chart(
+                    gauge(nutrition["health_score"]),
+                    use_container_width=True
+                )
+
+                n1,n2,n3,n4 = st.columns(4)
+                n1.metric("🔥 Cal",    nutrition["calories_per_100g"])
+                n2.metric("💪 Protein",f"{nutrition['protein_g']}g")
+                n3.metric("🌾 Carbs",  f"{nutrition['carbs_g']}g")
+                n4.metric("🧈 Fats",   f"{nutrition['fats_g']}g")
+
+                cls = nutrition["classification"]
+                tip = nutrition["tip"]
+                if cls == "Healthy":
+                    st.success(f"💡 {tip}")
+                elif cls == "Moderate":
+                    st.warning(f"💡 {tip}")
+                else:
+                    st.error(f"💡 {tip}")
+
+                # ── SAVE MEAL BUTTON ──────────────────────────────
+                if not st.session_state.meal_saved:
+                    if st.button("💾 Save This Meal",
+                                 use_container_width=True,
+                                 key="save_meal_btn"):
+                        add_meal({
+                            "date"          : meal_date.isoformat(),
+                            "meal_type"     : meal_type,
+                            "food_detected" : str(nutrition["indian_name"]),
+                            "food101_label" : raw_label,
+                            "classification": str(nutrition["classification"]),
+                            "health_score"  : int(nutrition["health_score"]),
+                            "calories"      : int(nutrition["calories_per_100g"]),
+                            "protein_g"     : float(nutrition["protein_g"]),
+                            "carbs_g"       : float(nutrition["carbs_g"]),
+                            "fats_g"        : float(nutrition["fats_g"]),
+                            "fiber_g"       : float(nutrition["fiber_g"]),
+                            "tip"           : str(nutrition["tip"]),
+                            "notes"         : notes,
+                            "confidence"    : conf,
+                            "was_corrected" : was_corrected,
+                            "logged_at"     : datetime.now().isoformat(),
+                        })
+                        st.session_state.meal_saved = True
+                        st.success("✅ Meal saved!")
+                else:
+                    st.success("✅ Meal already saved!")
+
+                # ── FEEDBACK BUTTONS ──────────────────────────────
+                st.markdown("""
+                <div class="feedback-box">
+                  <b>🤔 Was this identification correct?</b>
+                </div>
+                """, unsafe_allow_html=True)
+
+                fb1, fb2 = st.columns(2)
+
+                with fb1:
+                    if st.button("✅ Yes, correct!",
+                                 key="confirm_btn",
+                                 use_container_width=True):
+                        add_confirmation(raw_label)
+                        st.session_state.confirmed = True
+                        st.session_state.show_correction = False
+
+                with fb2:
+                    if st.button("❌ No, wrong food!",
+                                 key="wrong_btn",
+                                 use_container_width=True):
+                        st.session_state.show_correction = True
+                        st.session_state.confirmed = False
+
+                if st.session_state.confirmed:
+                    st.success("🧠 Thanks! AI remembers this is correct.")
+
+                # ── CORRECTION UI — STAYS VISIBLE ─────────────────
+                if st.session_state.show_correction:
+                    st.markdown("**What food is this actually?**")
+                    correct_choice = st.selectbox(
+                        "Select correct food:",
+                        db["indian_name"].tolist(),
+                        key="correction_select"
+                    )
+                    if st.button("💾 Save Correction",
+                                 key="save_correction"):
+                        row = db[db["indian_name"]==correct_choice].iloc[0]
+                        add_correction(raw_label, row["food_name"])
+                        st.success(
+                            f"🧠 Saved! Next time AI sees "
+                            f"'{raw_label.replace('_',' ').title()}' "
+                            f"it will show '{correct_choice}'!"
+                        )
+                        st.session_state.show_correction = False
+                        st.session_state.nutrition = get_nutrition(
+                            raw_label, db)
+                        st.rerun()
 
         else:
             st.markdown("""
@@ -834,9 +769,7 @@ if page == "📸 Log Meal":
         # Manual entry
         st.markdown("---")
         st.markdown("#### ✏️ Or add manually")
-        manual = st.selectbox(
-            "Select food", db["indian_name"].tolist()
-        )
+        manual = st.selectbox("Select food", db["indian_name"].tolist())
         if st.button("➕ Add this food"):
             r = db[db["indian_name"]==manual].iloc[0]
             add_meal({
@@ -907,8 +840,7 @@ elif page == "📊 Daily Report":
                             day["carbs_g"].sum(),
                             day["fats_g"].sum()],
                     names=["Protein","Carbs","Fats"],
-                    color_discrete_sequence=[
-                        "#56ab2f","#f7971e","#cb2d3e"],
+                    color_discrete_sequence=["#56ab2f","#f7971e","#cb2d3e"],
                     title="Macronutrients")
                 fig2.update_layout(height=260,
                                    paper_bgcolor="rgba(0,0,0,0)")
@@ -943,8 +875,7 @@ elif page == "📊 Daily Report":
                         st.write(f"**Fats:** {row['fats_g']}g")
                         st.write(f"**Fiber:** {row['fiber_g']}g")
                     if row.get("was_corrected"):
-                        st.info("🧠 This result was improved by "
-                                "your correction!")
+                        st.info("🧠 This result was improved by your correction!")
                     if row.get("tip"):
                         st.info(f"💡 {row['tip']}")
 
@@ -959,8 +890,7 @@ elif page == "📅 Weekly Report":
         st.info("No meals logged yet!")
     else:
         df["date"] = pd.to_datetime(df["date"])
-        wk = df[df["date"] >= pd.Timestamp(
-            date.today()-timedelta(days=7))]
+        wk = df[df["date"] >= pd.Timestamp(date.today()-timedelta(days=7))]
         if wk.empty:
             st.warning("No meals in last 7 days.")
         else:
@@ -971,41 +901,33 @@ elif page == "📅 Weekly Report":
             ).reset_index()
             daily["avg_score"] = daily["avg_score"].round(1)
 
-            hp = round(
-                len(wk[wk["classification"]=="Healthy"])/len(wk)*100)
-            jp = round(
-                len(wk[wk["classification"]=="Junk"])/len(wk)*100)
+            hp = round(len(wk[wk["classification"]=="Healthy"])/len(wk)*100)
+            jp = round(len(wk[wk["classification"]=="Junk"])/len(wk)*100)
 
             w1,w2,w3,w4 = st.columns(4)
-            w1.metric("📊 Weekly Score",
-                      f"{daily['avg_score'].mean():.1f}/100")
-            w2.metric("🍽️ Total Meals", len(wk))
-            w3.metric("✅ Healthy %",   f"{hp}%")
-            w4.metric("🚫 Junk %",      f"{jp}%")
+            w1.metric("📊 Weekly Score", f"{daily['avg_score'].mean():.1f}/100")
+            w2.metric("🍽️ Total Meals",  len(wk))
+            w3.metric("✅ Healthy %",    f"{hp}%")
+            w4.metric("🚫 Junk %",       f"{jp}%")
 
             fig1 = px.line(daily,x="date",y="avg_score",
                 title="📈 Daily Health Score Trend",
                 markers=True,
                 color_discrete_sequence=["#11998e"])
             fig1.add_hline(y=70,line_dash="dash",
-                line_color="#56ab2f",
-                annotation_text="Healthy (70)")
+                line_color="#56ab2f",annotation_text="Healthy (70)")
             fig1.add_hline(y=40,line_dash="dash",
-                line_color="#cb2d3e",
-                annotation_text="Junk (40)")
+                line_color="#cb2d3e",annotation_text="Junk (40)")
             fig1.update_layout(height=300,
-                paper_bgcolor="rgba(0,0,0,0)",
-                yaxis_range=[0,100])
+                paper_bgcolor="rgba(0,0,0,0)",yaxis_range=[0,100])
             st.plotly_chart(fig1,use_container_width=True)
 
             fig2 = px.bar(daily,x="date",y="total_cal",
                 title="🔥 Daily Calorie Intake",
                 color_discrete_sequence=["#f7971e"])
             fig2.add_hline(y=2000,line_dash="dash",
-                line_color="#333",
-                annotation_text="2000 kcal recommended")
-            fig2.update_layout(height=280,
-                paper_bgcolor="rgba(0,0,0,0)")
+                line_color="#333",annotation_text="2000 kcal recommended")
+            fig2.update_layout(height=280,paper_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig2,use_container_width=True)
 
             aw = daily["avg_score"].mean()
@@ -1027,19 +949,16 @@ elif page == "🏆 Monthly Report":
         st.info("No meals logged yet!")
     else:
         df["date"] = pd.to_datetime(df["date"])
-        mo = df[df["date"] >= pd.Timestamp(
-            date.today()-timedelta(days=30))]
+        mo = df[df["date"] >= pd.Timestamp(date.today()-timedelta(days=30))]
         if mo.empty:
             st.warning("No meals in last 30 days.")
         else:
             avg_mo = round(mo["health_score"].mean(),1)
             m1,m2,m3,m4 = st.columns(4)
-            m1.metric("🏆 Score",    f"{avg_mo}/100")
-            m2.metric("🍽️ Meals",   len(mo))
-            m3.metric("✅ Healthy",
-                      len(mo[mo["classification"]=="Healthy"]))
-            m4.metric("🚫 Junk",
-                      len(mo[mo["classification"]=="Junk"]))
+            m1.metric("🏆 Score",  f"{avg_mo}/100")
+            m2.metric("🍽️ Meals", len(mo))
+            m3.metric("✅ Healthy",len(mo[mo["classification"]=="Healthy"]))
+            m4.metric("🚫 Junk",   len(mo[mo["classification"]=="Junk"]))
 
             c1,c2 = st.columns(2)
             with c1:
@@ -1058,10 +977,8 @@ elif page == "🏆 Monthly Report":
             fig2 = px.bar(x=fc.values,y=fc.index,orientation="h",
                 title="🍽️ Most Eaten Foods",
                 color=fc.values,
-                color_continuous_scale=[
-                    "#cb2d3e","#f7971e","#56ab2f"])
-            fig2.update_layout(height=360,
-                paper_bgcolor="rgba(0,0,0,0)")
+                color_continuous_scale=["#cb2d3e","#f7971e","#56ab2f"])
+            fig2.update_layout(height=360,paper_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig2,use_container_width=True)
 
             st.markdown("### 🏅 Monthly Verdict")
@@ -1134,53 +1051,40 @@ elif page == "📋 History":
 
 
 # ══════════════════════════════════════════════════════════════════
-# AI LEARNING STATS PAGE
+# AI LEARNING STATS
 # ══════════════════════════════════════════════════════════════════
 elif page == "🧠 AI Learning Stats":
     st.subheader("🧠 AI Learning Stats")
-    st.markdown(
-        "This page shows how the app has learned from your feedback."
-    )
+    st.markdown("This page shows how the app has learned from your feedback.")
 
     data  = load_feedback()
     stats = get_correction_stats()
 
-    # Summary metrics
     m1,m2,m3 = st.columns(3)
-    m1.metric("Total Corrections",   stats["total_corrections"])
-    m2.metric("Confirmations",        stats["total_confirmations"])
+    m1.metric("Total Corrections",     stats["total_corrections"])
+    m2.metric("Confirmations",          stats["total_confirmations"])
     m3.metric("Unique foods corrected", stats["unique_corrected"])
 
-    # Corrections table
     if data["corrections"]:
         st.markdown("### 📋 What AI Learned from Your Corrections")
         rows = []
         for ai_label, corrections in data["corrections"].items():
             for correct_label, count in corrections.items():
                 db_match = load_db()
-                match = db_match[
-                    db_match["food_name"]==correct_label]
+                match  = db_match[db_match["food_name"]==correct_label]
                 indian = match.iloc[0]["indian_name"] \
                     if not match.empty else correct_label
-
                 rows.append({
-                    "AI originally said": ai_label.replace(
-                        "_"," ").title(),
+                    "AI originally said": ai_label.replace("_"," ").title(),
                     "You corrected to"  : indian,
                     "Times corrected"   : count,
                     "Trust level"       : "✅ Applied always"
-                                          if count>=1
-                                          else "⏳ Learning..."
+                                          if count>=1 else "⏳ Learning..."
                 })
 
         corrections_df = pd.DataFrame(rows)
-        st.dataframe(
-            corrections_df,
-            use_container_width=True,
-            hide_index=True
-        )
+        st.dataframe(corrections_df,use_container_width=True,hide_index=True)
 
-        # Bar chart of most corrected foods
         fig = px.bar(
             corrections_df,
             x="AI originally said",
@@ -1189,9 +1093,8 @@ elif page == "🧠 AI Learning Stats":
             color="Times corrected",
             color_continuous_scale=["#f7971e","#56ab2f"]
         )
-        fig.update_layout(height=300,
-                          paper_bgcolor="rgba(0,0,0,0)")
-        st.plotly_chart(fig, use_container_width=True)
+        fig.update_layout(height=300,paper_bgcolor="rgba(0,0,0,0)")
+        st.plotly_chart(fig,use_container_width=True)
 
     else:
         st.info(
@@ -1199,7 +1102,6 @@ elif page == "🧠 AI Learning Stats":
             "the AI if it's wrong — it will learn from you!"
         )
 
-    # Confirmations
     if data["confirmations"]:
         st.markdown("### ✅ Foods AI Got Right (Confirmed by You)")
         conf_data = [
@@ -1208,10 +1110,8 @@ elif page == "🧠 AI Learning Stats":
         ]
         conf_df = pd.DataFrame(conf_data).sort_values(
             "Confirmed", ascending=False)
-        st.dataframe(conf_df, use_container_width=True,
-                     hide_index=True)
+        st.dataframe(conf_df,use_container_width=True,hide_index=True)
 
-    # Explanation
     st.markdown("---")
     st.markdown("### 💡 How AI Learning Works in This App")
     col1, col2 = st.columns(2)
@@ -1219,7 +1119,7 @@ elif page == "🧠 AI Learning Stats":
         st.markdown("""
         **When you click ❌ Wrong food:**
         1. App saves: *"when AI says X, show Y instead"*
-        2. Stored in `user_feedback.json`
+        2. Stored in `/tmp/user_feedback.json`
         3. Next upload → checks this file first
         4. Shows YOUR correction, not AI's guess
         """)
